@@ -8,8 +8,7 @@ logic clk;
 InstructionMemory uut (
 .PC(PC),
 .instruction(instruction),
-.clk(clk)
-); 
+);
 
 initial begin
 clk=1;
@@ -28,7 +27,7 @@ PC=20;
 
 end
 
-always begin 
+always begin
 #5
 clk=!clk;
 end
