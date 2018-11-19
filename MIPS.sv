@@ -1,5 +1,7 @@
 
-module MIPS(input clk);
+module MIPS_12(input clk, rst,
+output y );
+  assign y = ^data;
 
   logic [5:0] PC,PC_next; // the only state vars, rest are connections
 
@@ -7,43 +9,45 @@ module MIPS(input clk);
   wire [4:0] wn;
   wire [31:0] b,instruciton,data_out,alu_result,addr_alu_result;
   wire [31:0] data,rd1,rd2,wd;
-  wire	RegDst,RegWrite,ALUSrc,MemRead,MemToReg,PCSrc,Branch,alu_zero;
+  wire	RegDst,RegWrite,ALUSrc,MemRead,MemWrite,MemToReg,PCSrc,Branch,alu_zero;
   wire [2:0] alu_op;// translated alu op
 
   DataMemory dm (
-  .address(alu_result),
-  .data_in(rd2),
-  .data_out(data_out),
-  .memRead(MemRead)
+    .address(alu_result),
+    .data_in(rd2),
+    .data_out(data_out),
+    .memRead(MemRead),
+    .memWrite(MemWrite),
   );
 
   InstructionMemory im (
-  .PC(PC),
-  .instruction(instruction),
-  .clk()
+    .PC(PC),
+    .instruction(instruction),
   );
 
   RegisterFile reg (
-  .rs(instruciton[25:21]),
-  .rt(instruciton[20:16]), // break down instruciton
-  .wn(wn),
-  .wd(wd),
-  .RegWrite(RegWrite),
-  .rd1(rd1),
-  .rd2(rd2)
+    .rs(instruciton[25:21]),
+    .rt(instruciton[20:16]), // break down instruciton
+    .wn(wn),
+    .wd(wd),
+    .RegWrite(RegWrite),
+    .rd1(rd1),
+    .rd2(rd2)
   );
 
-  module control(
+  module Control(
   	.ins(instruction[31:26]),
   	.RegDst(RegDst),
     .Branch(Branch),
     .RegWrite(RegWrite),
     .ALUSrc(ALUSrc),
     .MemRead(MemRead),
+    .MemWrite(MemWrite),
     .MemToReg(MemToReg),
     .PCSrc(PCSrc),
   	.ALUOp(ALUOp)
   );
+
   ALU_Control alu_ctr(
     .InsOp(instruciton[5:0]),
     .ALUOp(ALUOp),
