@@ -1,14 +1,14 @@
 
 module MIPS(input clk);
 
-  logic [5:0] PC;
-  logic [4:0] wn;
+  logic [5:0] PC,PC_next; // the only state vars, rest are connections
 
+  wire [5:0] PC_4,b_addr;
+  wire [4:0] wn;
   wire [31:0] b,instruciton,data_out,alu_result,addr_alu_result;
   wire [31:0] data,rd1,rd2,wd;
-  wire	RegDst,RegWrite,ALUSrc,MemRead,MemToReg,PCSrc;
+  wire	RegDst,RegWrite,ALUSrc,MemRead,MemToReg,PCSrc,Branch,alu_zero;
   wire [2:0] alu_op;// translated alu op
-  logic [5:0] PC_4;
 
   DataMemory dm (
   .address(alu_result),
@@ -36,6 +36,7 @@ module MIPS(input clk);
   module control(
   	.ins(instruction[31:26]),
   	.RegDst(RegDst),
+    .Branch(Branch),
     .RegWrite(RegWrite),
     .ALUSrc(ALUSrc),
     .MemRead(MemRead),
@@ -52,17 +53,20 @@ module MIPS(input clk);
     .a(rd1),// connect Reg to ALU
     .b(b),
     .op(alu_op),
-    .c(alu_result)
+    .c(alu_result),
+    .zero(alu_zero)
   );
 
 
-  assign b= ALUSrc ? rd2 : {16{instruciton[15:0]},instruciton[15:0]}; // choose either sign extention or reg RegisterFile
-  assign wd= MemToReg ? data_out : alu_result; // mux right of datamem
-  assign wn= RegDst ? instruciton[15:11] : instruction[20:16];
-
+  assign b = ALUSrc ? rd2 : {16{instruciton[15:0]},instruciton[15:0]}; // choose either sign extention or reg RegisterFile
+  assign wd = MemToReg ? data_out : alu_result; // mux right of datamem
+  assign wn = RegDst ? instruciton[15:11] : instruction[20:16];
+  assign b_addr = PC_4+ ({16{instruciton[15:0]},instruciton[15:0]} << 2 ); // ALU top right
+  assign PC_next = (Branch && alu_zero) ? b_addr : PC_4; // top right mux
+  assign PC_4=PC+4;
 
   always @ (posedge clk) begin
-    PC_4=PC+4;
+    PC=PC_next;
   end
 
 endmodule
