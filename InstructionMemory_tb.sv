@@ -7,7 +7,7 @@ logic clk;
 
 InstructionMemory uut (
 .PC(PC),
-.instruction(instruction),
+.instruction(instruction)
 );
 
 initial begin
