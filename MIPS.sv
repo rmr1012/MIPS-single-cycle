@@ -8,17 +8,22 @@ output y );
 
   logic [5:0] PC_4,b_addr;
   logic [4:0] wn;
-  wire [31:0] instruction;
-  logic [31:0] b,data_out,alu_result,addr_alu_result;
+  wire [31:0] instruction, alu_result;
+  logic [31:0] b,data_out;
   logic [31:0] data,rd1,rd2,wd;
   logic	RegDst,RegWrite,ALUSrc,MemRead,MemWrite,MemToReg,PCSrc,Branch,alu_zero;
   logic [2:0] alu_op;// translated alu op
 
+  logic halt;
 
-  assign y = ^data;
+
+  assign clk_internal = clk && !halt;
+  assign y = ^alu_result;
   InstructionMemory im (
     .PC(PC),
-    .instruction(instruction)
+    .instruction(instruction),
+    .halt(halt),
+	.rst(rst)
   );
 
   Control ctrl(
@@ -59,7 +64,8 @@ output y );
     .data_in(rd2),
     .data_out(data_out),
     .memRead(MemRead),
-    .memWrite(MemWrite)
+    .memWrite(MemWrite),
+	.clk(clk_internal)
   );
 
 
@@ -79,7 +85,7 @@ always @(alu_result,data_out) begin
 wd = MemToReg ? data_out : alu_result; // mux right of datamem
 end
 
-  always @ (posedge clk) begin
+  always @ (posedge clk_internal) begin
     PC=PC_next;
   end
 
