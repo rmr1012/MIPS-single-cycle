@@ -1,9 +1,7 @@
 
 
 module Control(
-	input[31:0]	ins,
-
-	input rst,
+	input[5:0]	ins_H,ins_L,
 	output logic RegDst,RegWrite,ALUSrc,MemWrite,MemRead,MemToReg,PCSrc,Branch,
 	output logic [2:0]outOp
 );
@@ -13,7 +11,7 @@ always_comb begin
 //	if (rst) begin
 //		RegDst=0; ALUSrc=0; MemToReg=0; RegWrite=1; MemRead=0; MemWrite=0; Branch=0; PCSrc=0; ALUOp=2'b00;
 //	end
-	case(ins[31:26])
+	case(ins_H)
 		6'b001000: begin RegDst=0; ALUSrc=1; MemToReg=0; RegWrite=1; MemRead=0; MemWrite=0; Branch=0; PCSrc=0; ALUOp=2'b00;end // addi
 		6'b000000: begin RegDst=1; ALUSrc=0; MemToReg=0; RegWrite=1; MemRead=0; MemWrite=0; Branch=0; PCSrc=0; ALUOp=2'b10;end // Rtype
 		6'b100011: begin RegDst=0; ALUSrc=1; MemToReg=1; RegWrite=1; MemRead=1; MemWrite=0; Branch=0; PCSrc=0; ALUOp=2'b00;end // lw
@@ -25,12 +23,12 @@ always_comb begin
 
 	if 	(ALUOp==2'b00) begin outOp=3'b010; end // addi lw, sw
 	else if (ALUOp==2'b01) begin outOp=3'b110; end // beq,bne
-	else if (ALUOp[1] && ins[5:0]==6'b100000) begin outOp=3'b010; end //add
-	else if (ALUOp[1] && ins[5:0]==6'b100010) begin outOp=3'b110; end //sub
-	else if (ALUOp[1] && ins[5:0]==6'b100100) begin outOp=3'b000; end //and
-	else if (ALUOp[1] && ins[5:0]==6'b100101) begin outOp=3'b001; end // or
-	else if (ALUOp[1] && ins[5:0]==6'b101010) begin outOp=3'b111; end //slt
-	else begin outOp=3'b011; end // this should never happen, 
+	else if (ALUOp[1] && ins_L==6'b100000) begin outOp=3'b010; end //add
+	else if (ALUOp[1] && ins_L==6'b100010) begin outOp=3'b110; end //sub
+	else if (ALUOp[1] && ins_L==6'b100100) begin outOp=3'b000; end //and
+	else if (ALUOp[1] && ins_L==6'b100101) begin outOp=3'b001; end // or
+	else if (ALUOp[1] && ins_L==6'b101010) begin outOp=3'b111; end //slt
+	else begin outOp=3'b011; end // this should never happen,
 
 end
 

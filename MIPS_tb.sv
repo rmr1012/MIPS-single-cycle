@@ -11,7 +11,7 @@ MIPS_12 uut (
 initial begin
 	clk=0;
 	rst=1;
-	#2
+	#25
 	rst=0;
 end
 

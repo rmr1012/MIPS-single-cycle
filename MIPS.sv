@@ -3,7 +3,7 @@ module MIPS_12(input clk, rst,
 output y );
 
 
-  logic [5:0] PC=0;
+  logic [5:0] PC;
   logic [5:0] PC_next; // the only state vars, rest are connections
 
   logic [5:0] PC_4,b_addr;
@@ -19,6 +19,7 @@ output y );
 
   assign clk_internal = clk && !halt;
   assign y = ^alu_result;
+
   InstructionMemory im (
     .PC(PC),
     .instruction(instruction),
@@ -27,7 +28,8 @@ output y );
   );
 
   Control ctrl(
-    .ins(instruction),
+    .ins_H(instruction[31:26]),
+    .ins_L(instruction[5:0]),
     .RegDst(RegDst),
     .Branch(Branch),
     .RegWrite(RegWrite),
@@ -36,7 +38,6 @@ output y );
     .MemWrite(MemWrite),
     .MemToReg(MemToReg),
     .PCSrc(PCSrc),
-    .rst(rst),
     .outOp(alu_op)
   );
   RegisterFile regFile (
@@ -47,7 +48,8 @@ output y );
     .RegWrite(RegWrite),
     .rd1(rd1),
     .rd2(rd2),
-    .rst(rst)
+    .rst(rst),
+    .clk(clk_internal)
   );
 
 
@@ -72,21 +74,21 @@ output y );
 
 
 always_comb begin
-  PC_4=PC+4;
+
+  PC_4= PC+4;
   b_addr = PC_4+ ({ {14{instruction[15]}},instruction[15:0] , 2'b00} ); // ALU top right
   PC_next = (Branch && alu_zero) ? b_addr : PC_4; // top right mux
   PC_next = PCSrc ? instruction[25:0]<<2 : PC_next; // top right mux
   b = ALUSrc ?  { {16{instruction[15]}} ,instruction[15:0]} : rd2 ; // choose either sign extention or reg RegisterFile
-  
+
   wn = RegDst ? instruction[15:11] : instruction[20:16];
 
 end
-always @(alu_result,data_out) begin
-wd = MemToReg ? data_out : alu_result; // mux right of datamem
-end
+
+assign wd = MemToReg ? data_out : alu_result; // mux right of datamem
 
   always @ (posedge clk_internal) begin
-    PC=PC_next;
+    PC=rst ? 0 :PC_next;
   end
 
 endmodule

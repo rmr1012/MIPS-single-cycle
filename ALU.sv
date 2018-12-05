@@ -7,7 +7,7 @@ module ALU (a,b,op,c,zero);
 
 
 
-always@ (a,b,op) begin
+always_comb begin
 
 	case(op)
 	3'b010: c = a + b;
@@ -15,6 +15,7 @@ always@ (a,b,op) begin
 	3'b000: c = {1'bx,(a&b)};  //a&b
 	3'b001: c = {1'bx,(a|b)};  //a|b
 	3'b111: c = (a<b) ? 1 : 0;  //a^b
+	default: c = 0; // shit case
 
 	endcase
 	zero = (c == 0) ? 1 : 0; // if output is 0, set zero to 1
