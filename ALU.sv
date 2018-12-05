@@ -7,7 +7,7 @@ module ALU (a,b,op,c,zero);
 
 
 
-always_comb begin
+always@ (a,b,op) begin
 
 	case(op)
 	3'b010: c = a + b;
